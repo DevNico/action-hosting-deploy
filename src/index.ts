@@ -40,9 +40,9 @@ import {
 // Inputs defined in action.yml
 const expires = getInput("expires");
 const projectId = getInput("projectId");
-const googleApplicationCredentials = getInput("firebaseServiceAccount", {
-  required: true,
-});
+const googleApplicationCredentialsEnv =
+  process.env.GOOGLE_APPLICATION_CREDENTIALS;
+const googleApplicationCredentials = getInput("firebaseServiceAccount");
 const configuredChannelId = getInput("channelId");
 const isProductionDeploy = configuredChannelId === "live";
 const token = process.env.GITHUB_TOKEN || getInput("repoToken");
@@ -79,11 +79,16 @@ async function run() {
     }
     endGroup();
 
+    var gacFilename: string | undefined;
     startGroup("Setting up CLI credentials");
-    const gacFilename = await createGacFile(googleApplicationCredentials);
-    console.log(
-      "Created a temporary file with Application Default Credentials."
-    );
+    if (!googleApplicationCredentialsEnv) {
+      gacFilename = await createGacFile(googleApplicationCredentials);
+      console.log(
+        "Created a temporary file with Application Default Credentials."
+      );
+    } else {
+      console.log("Using existing GOOGLE_APPLICATION_CREDENTIALS.");
+    }
     endGroup();
 
     if (isProductionDeploy) {

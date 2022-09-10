@@ -68,8 +68,8 @@ export function interpretChannelDeployResult(
 
 async function execWithCredentials(
   args: string[],
-  projectId,
-  gacFilename,
+  projectId: string | undefined,
+  gacFilename: string | undefined,
   debug: boolean = false
 ) {
   let deployOutputBuf: Buffer[] = [];
@@ -93,7 +93,12 @@ async function execWithCredentials(
         env: {
           ...process.env,
           FIREBASE_DEPLOY_AGENT: "action-hosting-deploy",
-          GOOGLE_APPLICATION_CREDENTIALS: gacFilename, // the CLI will automatically authenticate with this env variable set
+          ...(gacFilename
+            ? {
+                // the CLI will automatically authenticate with this env variable set
+                GOOGLE_APPLICATION_CREDENTIALS: gacFilename,
+              }
+            : {}),
         },
       }
     );
@@ -117,7 +122,7 @@ async function execWithCredentials(
 }
 
 export async function deployPreview(
-  gacFilename: string,
+  gacFilename: string | undefined,
   deployConfig: DeployConfig
 ) {
   const { projectId, channelId, target, expires } = deployConfig;
@@ -141,7 +146,7 @@ export async function deployPreview(
 }
 
 export async function deployProductionSite(
-  gacFilename,
+  gacFilename: string | undefined,
   productionDeployConfig: ProductionDeployConfig
 ) {
   const { projectId, target } = productionDeployConfig;
